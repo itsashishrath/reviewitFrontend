@@ -33,7 +33,7 @@ import MobileReviewDisplay from './reviewpage';
 
 const App = () => {
   return (
-    <div>
+    <div className="bg-gradient-to-br from-purple-400 via-pink-500 to-red-500">
       <MobileReviewDisplay/>
     </div>
   );
