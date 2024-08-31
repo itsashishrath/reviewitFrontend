@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
-import { ScrollArea } from "./components/ui/scroll-area";
-import { Popover, PopoverContent, PopoverTrigger } from "./components/ui/popover";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Smartphone, Monitor, Camera, Battery, Cpu } from 'lucide-react';
-import NavMenu from './components/NavigationMenuComponent';
+import { useLocation } from 'react-router-dom';
 
 const Citation = ({ index, source, children }) => {
   return (
@@ -42,11 +41,11 @@ const SourceList = ({ sources }) => (
 const MobileReview = ({ review }) => {
   const [isSourcesVisible, setIsSourcesVisible] = useState(false);
   const subtopicIcons = {
-    "Camera Quality": <Camera className="w-5 h-5" />,
-    "Battery Life": <Battery className="w-5 h-5" />,
-    "Performance": <Cpu className="w-5 h-5" />,
-    "Build Quality": <Smartphone className="w-5 h-5" />,
-    "Display": <Monitor className="w-5 h-5" />
+    "Design & Build Quality": <Smartphone className="w-5 h-5" />,
+    "Display": <Monitor className="w-5 h-5" />,
+    "Camera": <Camera className="w-5 h-5" />,
+    "Performance & Battery Life": <Battery className="w-5 h-5" />,
+    "Software & AI Features": <Cpu className="w-5 h-5" />
   };
 
   const renderWithCitations = (text) => {
@@ -70,7 +69,7 @@ const MobileReview = ({ review }) => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-4 font-sans flex flex-col md:flex-row border border-blue-800 bg-gradient-to-br from-purple-400 via-pink-500 to-red-500">
+    <div className="max-w-7xl mx-auto p-4 font-sans flex flex-col md:flex-row border border-blue-800 ">
       <div className="flex-grow mr-0 md:mr-4 border border-black w-full md:w-3/4 mb-4 md:mb-0">
         <Card className="overflow-hidden shadow-lg bg-gradient-to-br from-purple-400 via-pink-500 to-red-500 text-white w-full border border-black">
           <CardHeader className="pb-2">
@@ -88,34 +87,38 @@ const MobileReview = ({ review }) => {
               </TabsList>
               <TabsContent value="subtopics" className="mt-4 w-full">
                 <ScrollArea className="h-[300px] md:h-[500px] pr-4">
-                  {Object.entries(review.subtopics).filter(([topic]) => topic !== "Overall" && topic !== "Pros" && topic !== "Cons").map(([topic, content], index) => (
+                  {Object.entries(review.subtopics).map(([topic, content], index) => (
                     <div key={index} className="mb-6">
                       <h3 className="text-lg md:text-xl font-semibold mb-2 flex items-center">
                         {subtopicIcons[topic]}
                         <span className="ml-2">{topic}</span>
                       </h3>
-                      <ul className="list-disc list-inside">
-                        {content.map((point, idx) => (
-                          <li key={idx} className="mb-1 text-sm md:text-base">
-                            {renderWithCitations(point)}
-                          </li>
-                        ))}
-                      </ul>
+                      {Array.isArray(content) ? (
+                        <ul className="list-disc list-inside">
+                          {content.map((point, idx) => (
+                            <li key={idx} className="mb-1 text-sm md:text-base">
+                              {renderWithCitations(point)}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="mb-1 text-sm md:text-base">{renderWithCitations(content)}</p>
+                      )}
                     </div>
                   ))}
                 </ScrollArea>
               </TabsContent>
-              <TabsContent value="overall" className="mt-4 w-full">
+              {/* <TabsContent value="overall" className="mt-4 w-full">
                 <p className="text-base md:text-lg">
-                  {renderWithCitations(review.subtopics.Overall[0])}
+                  {renderWithCitations(review.overall)}
                 </p>
-              </TabsContent>
-              <TabsContent value="proscons" className="mt-4 w-full">
+              </TabsContent> */}
+              {/* <TabsContent value="proscons" className="mt-4 w-full">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <h3 className="text-lg md:text-xl font-semibold mb-2">Pros</h3>
                     <ul className="list-disc list-inside">
-                      {review.subtopics.Pros.map((pro, index) => (
+                      {review.pros.map((pro, index) => (
                         <li key={index} className="mb-1 text-sm md:text-base">
                           {renderWithCitations(pro)}
                         </li>
@@ -125,7 +128,7 @@ const MobileReview = ({ review }) => {
                   <div>
                     <h3 className="text-lg md:text-xl font-semibold mb-2">Cons</h3>
                     <ul className="list-disc list-inside">
-                      {review.subtopics.Cons.map((con, index) => (
+                      {review.cons.map((con, index) => (
                         <li key={index} className="mb-1 text-sm md:text-base">
                           {renderWithCitations(con)}
                         </li>
@@ -133,7 +136,7 @@ const MobileReview = ({ review }) => {
                     </ul>
                   </div>
                 </div>
-              </TabsContent>
+              </TabsContent> */}
             </Tabs>
           </CardContent>
         </Card>
@@ -155,39 +158,13 @@ const MobileReview = ({ review }) => {
 
 const MobileReviewDisplay = () => {
   const location = useLocation();
-  const navigate = useNavigate();
   const review = location.state?.review;
 
   if (!review) {
-    return (
-      <div className="flex flex-col min-h-screen bg-gradient-to-b from-blue-500 to-purple-600">
-        <header className="p-4 border border-black">
-          <NavMenu />
-        </header>
-        <main className="flex-grow flex items-center justify-center">
-          <div className="text-white text-xl">No review data available. Please perform a search first.</div>
-        </main>
-        <footer className="p-4 text-center text-white">
-          <p>&copy; 2024 REVIEWIT. All rights reserved.</p>
-        </footer>
-      </div>
-    );
+    return <div>No review data available. Please perform a search first.</div>;
   }
 
-  return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-purple-400 via-pink-500 to-red-500">
-      <header className="p-4 border border-black flex justify-between">
-        <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">REVIEWIT</h1>
-        <NavMenu className="border border-green-500" />
-      </header>
-      <main className="flex-grow overflow-auto">
-        <MobileReview review={review} />
-      </main>
-      <footer className="p-4 text-center text-white">
-        <p>&copy; 2024 REVIEWIT. All rights reserved.</p>
-      </footer>
-    </div>
-  );
+  return <MobileReview review={review} />;
 };
 
 export default MobileReviewDisplay;
